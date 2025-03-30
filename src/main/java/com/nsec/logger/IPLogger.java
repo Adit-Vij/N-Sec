@@ -12,28 +12,42 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class IPLogger {
-    private static final String LOG_FILE = "C:\\Users\\adit2\\Desktop\\packet_log.txt";
-    public void startSniffing(int device_index, DefaultTableModel tableModel){
-        try{
-            int index = 0;
-            for (PcapNetworkInterface dev : Pcaps.findAllDevs()) {
-                System.out.println(index++ + ": " + dev.getName() + " - " + dev.getDescription());
-            }
-            PcapNetworkInterface nif = Pcaps.findAllDevs().get(device_index); // Get The Device from Available Network Interfaces
-            int snapLen = 65536; // Max Bytes to Capture from Each Packet
-            PcapNetworkInterface.PromiscuousMode mode =  PcapNetworkInterface.PromiscuousMode.PROMISCUOUS; // Capture All Traffic
-            int timeout = 10; // Buffer Timeout in Milliseconds
+    private static final String LOG_FILE = "packet_log.txt";
+    public PcapHandle startSniffing(int device_index, DefaultTableModel tableModel, SnifferThread thread) {
+        try {
+            PcapNetworkInterface nif = Pcaps.findAllDevs().get(device_index);
+            int snapLen = 65536;
+            PcapNetworkInterface.PromiscuousMode mode = PcapNetworkInterface.PromiscuousMode.PROMISCUOUS;
+            int timeout = 10;
 
-            PcapHandle handle = nif.openLive(snapLen, mode, timeout); // Open Capture Handle on nif
-            System.out.println("Started Sniffing on: "+nif.getName());
+            PcapHandle handle = nif.openLive(snapLen, mode, timeout);
+            thread.setHandle(handle);  // Store handle in the thread before looping
 
-            handle.loop(-1, (PacketListener)packet -> processPacket(packet, tableModel)); //Start Indefinite Capture and Call processPacket
-        }catch(Exception e){
+            System.out.println("Started Sniffing on: " + nif.getName());
+
+            handle.loop(-1, (PacketListener) packet -> {
+                if (thread.isRunning()) {
+                    processPacket(packet, tableModel);
+                } else {
+                    try {
+                        handle.breakLoop(); // Stop capturing when thread stops
+                    } catch (NotOpenException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            });
+
+            return handle;  // This will never execute until sniffing stops (problematic)
+
+        } catch (Exception e) {
             e.printStackTrace();
         }
+        return null; // Return null in case of failure
     }
+
     private void processPacket(Packet packet, DefaultTableModel tableModel){
         // Extracts the IP and TCP headers from the packet
         // Ignores packet types like UDP, ARP, etc. for now...
@@ -64,7 +78,9 @@ public class IPLogger {
 
     private void log(String direction, String sourceIP, String destIP, int port, DefaultTableModel tableModel){
         LocalDateTime timestamp = LocalDateTime.now();
-        String logEntry = String.format("%s | %s | Src: %s | Dest: %s | Port: %d", timestamp, direction, sourceIP, destIP, port);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+        String formattedTime = timestamp.format(formatter);
+        String logEntry = String.format("%s | %s | Src: %s | Dest: %s | Port: %d", formattedTime, direction, sourceIP, destIP, port);
         try (FileWriter writer = new FileWriter(LOG_FILE, true)) {
             writer.write(logEntry + "\n");
             System.out.println(logEntry);
@@ -73,8 +89,7 @@ public class IPLogger {
         }
         if (tableModel != null) {
             SwingUtilities.invokeLater(() -> {
-                tableModel.addRow(new Object[]{timestamp.toString(), direction, sourceIP, destIP, port});
-                System.out.println("Row added: " + timestamp);
+                tableModel.addRow(new Object[]{formattedTime, direction, sourceIP, destIP, port});
                 tableModel.fireTableRowsInserted(tableModel.getRowCount() - 1, tableModel.getRowCount() - 1);
             });}
 
