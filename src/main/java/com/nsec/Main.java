@@ -77,9 +77,7 @@ public class Main {
                         "127.0.0.1",
                         range[0],
                         range[1],
-                        ui.getPort_tableModel(),
-                        ui.getProgressBar(), // Ensure UI_Main has a method getProgressBar()
-                        ui.getStatusLabel()   // Ensure UI_Main has a method getStatusLabel()
+                        ui.getPort_tableModel()
                 );
 
                 ui.getPortScanButton().setText("Stop");
