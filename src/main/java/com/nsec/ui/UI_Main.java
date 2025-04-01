@@ -26,8 +26,6 @@ public class UI_Main {
     private JButton btn_portScan;
     private JTable tbl_portScan;
     private JScrollPane scrl_logs;
-    private JProgressBar prog_scan;
-    private JLabel lbl_status;
     private DefaultTableModel ip_tableModel;
     private DefaultTableModel port_tableModel;
 
@@ -52,12 +50,6 @@ public class UI_Main {
 
     public JButton getIPLogStopButton() {
         return btn_stopIpLog;
-    }
-    public JProgressBar getProgressBar(){
-        return prog_scan;
-    }
-    public JLabel getStatusLabel(){
-        return lbl_status;
     }
     public int getDeviceIndex() { return combo_nif.getSelectedIndex();}
     public DefaultTableModel getIp_tableModel() {

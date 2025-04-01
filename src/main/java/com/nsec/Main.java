@@ -58,34 +58,44 @@ public class Main {
             ui.getIPLogStopButton().setEnabled(false);
         });
 
-        // Port Scanner
-        AtomicBoolean scanToggle = new AtomicBoolean(false); // True if Scan is Running
+        // Port Scanner - create a single instance
+        AtomicBoolean scanRunning = new AtomicBoolean(false);
+        final PortScanner[] portScanner = {null}; // Using array to allow modification in lambda
 
         ui.getPortScanButton().addActionListener(e -> {
-            int[] range = ui.getPortRange();
-            if (range[0] > range[1]) {
-                JOptionPane.showMessageDialog(null, "Start Port Cannot be Greater Than End Port!", "Warning", JOptionPane.WARNING_MESSAGE);
-                return;
-            }
-            if (range[0] == range[1]) {
-                JOptionPane.showMessageDialog(null, "Start Port Cannot be Equal to End Port!", "Warning", JOptionPane.WARNING_MESSAGE);
-                return;
-            }
+            if (!scanRunning.get()) { // Start Scan
+                int[] range = ui.getPortRange();
+                if (range[0] > range[1]) {
+                    JOptionPane.showMessageDialog(null, "Start Port Cannot be Greater Than End Port!", "Warning", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+                if (range[0] == range[1]) {
+                    JOptionPane.showMessageDialog(null, "Start Port Cannot be Equal to End Port!", "Warning", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
 
-            if (!scanToggle.get()) { // Start Scan
-                PortScanner portScanner = new PortScanner(
-                        "127.0.0.1",
-                        range[0],
-                        range[1],
-                        ui.getPort_tableModel()
-                );
-
+                // Update UI
                 ui.getPortScanButton().setText("Stop");
-                scanToggle.set(true);
-                portScanner.startScan();
+                scanRunning.set(true);
+
+                // Create a new port scanner with completion callback
+                portScanner[0] = new PortScanner("127.0.0.1", range[0], range[1], ui.getPort_tableModel()) {
+                    @Override
+                    protected void onScanComplete() {
+                        SwingUtilities.invokeLater(() -> {
+                            ui.getPortScanButton().setText("Start");
+                            scanRunning.set(false);
+                        });
+                    }
+                };
+
+                portScanner[0].startScan();
             } else { // Stop Scan
-                scanToggle.set(false);
+                if (portScanner[0] != null) {
+                    portScanner[0].stopScan();
+                }
                 ui.getPortScanButton().setText("Start");
+                scanRunning.set(false);
             }
         });
     }

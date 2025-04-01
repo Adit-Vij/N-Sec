@@ -26,6 +26,11 @@ public class PortScanner {
         end_port = end;
     }
 
+    // This method is called when scan completes - override in subclasses
+    protected void onScanComplete() {
+        // Default empty implementation
+    }
+
     public void startScan() {
         if (running.get()) {
             JOptionPane.showMessageDialog(null, "Scan already in progress!", "Warning", JOptionPane.WARNING_MESSAGE);
@@ -64,6 +69,8 @@ public class PortScanner {
             @Override
             protected void done() {
                 running.set(false);
+                // Notify that scan is complete
+                onScanComplete();
             }
         }.execute();
     }
@@ -75,6 +82,11 @@ public class PortScanner {
         }
 
         running.set(false);
-        executor.shutdownNow();
+        if (executor != null) {
+            executor.shutdownNow();
+        }
+
+        // Notify that scan was manually stopped
+        onScanComplete();
     }
 }
