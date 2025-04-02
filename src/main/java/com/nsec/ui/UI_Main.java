@@ -7,15 +7,16 @@ import org.pcap4j.core.Pcaps;
 import java.awt.*;
 import java.util.List;
 
+
 public class UI_Main {
     private JPanel superContainer;
     private JPanel ipLoggerContainer;
     private JLabel lbl_nif;
-    private JComboBox<String> combo_nif;
+    private JComboBox<String> combo_nifLogger;
     private JButton btn_startIpLog;
     private JButton btn_stopIpLog;
     private JTable tbl_logs;
-    private JTabbedPane tabbedPane1;
+    private JTabbedPane tabbed_modules;
     private JPanel tab_ipLogger;
     private JPanel tab_portScanner;
     private JPanel portScannerContainer;
@@ -26,6 +27,11 @@ public class UI_Main {
     private JButton btn_portScan;
     private JTable tbl_portScan;
     private JScrollPane scrl_logs;
+    private JPanel tab_networkDiscovery;
+    private JComboBox<String> combo_nifDiscovery;
+    private JLabel lbl_nif2;
+    private JButton btn_startDiscovery;
+    private JTable tbl_discovery;
     private DefaultTableModel ip_tableModel;
     private DefaultTableModel port_tableModel;
 
@@ -33,15 +39,16 @@ public class UI_Main {
         JFrame frame = new JFrame("N-Sec: Network Security Suite");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.add(superContainer);
-        populateComboBoxWithNif(combo_nif);
+        populateComboBoxWithNif(combo_nifLogger);
+        populateComboBoxWithNif(combo_nifDiscovery);
         btn_stopIpLog.setEnabled(false);
         frame.setMinimumSize(new Dimension(500, 400));
         frame.pack();
         frame.setVisible(true);
     }
 
-    public JComboBox<String> getNifComboBox() {
-        return combo_nif;
+    public JComboBox<String> getNifComboBoxLogger() {
+        return combo_nifLogger;
     }
 
     public JButton getIPLogStartButton() {
@@ -51,7 +58,9 @@ public class UI_Main {
     public JButton getIPLogStopButton() {
         return btn_stopIpLog;
     }
-    public int getDeviceIndex() { return combo_nif.getSelectedIndex();}
+
+    public int getDeviceIndex(JComboBox<String> combo_nif) { return combo_nif.getSelectedIndex();}
+
     public DefaultTableModel getIp_tableModel() {
         return ip_tableModel;
     }
@@ -83,6 +92,7 @@ public class UI_Main {
         // Properly initialize JTable and DefaultTableModel
         String[] ip_columns = {"Timestamp", "Direction", "Source IP", "Destination IP", "Port"};
         String[] port_columns = {"IP","Port","Service"};
+        String[] discover_columns = {"IP", "MAC", "Device Name", "Vendor"};
         ip_tableModel = new DefaultTableModel(ip_columns, 0);
         tbl_logs = new JTable(ip_tableModel);
         port_tableModel = new DefaultTableModel(port_columns, 0);

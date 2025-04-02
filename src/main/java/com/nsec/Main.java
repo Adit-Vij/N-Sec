@@ -32,12 +32,12 @@ public class Main {
             }
 
             // Create and start a new sniffing thread
-            st[0] = new SnifferThread(logger, ui.getDeviceIndex());
+            st[0] = new SnifferThread(logger, ui.getDeviceIndex(ui.getNifComboBoxLogger()));
             st[0].tableModel = ui.getIp_tableModel();
             st[0].start();
 
             // Update UI state
-            ui.getNifComboBox().setEnabled(false);
+            ui.getNifComboBoxLogger().setEnabled(false);
             ui.getIPLogStartButton().setEnabled(false);
             ui.getIPLogStopButton().setEnabled(true);
         });
@@ -54,7 +54,7 @@ public class Main {
 
             // Enable start button after stopping
             ui.getIPLogStartButton().setEnabled(true);
-            ui.getNifComboBox().setEnabled(true);
+            ui.getNifComboBoxLogger().setEnabled(true);
             ui.getIPLogStopButton().setEnabled(false);
         });
 
