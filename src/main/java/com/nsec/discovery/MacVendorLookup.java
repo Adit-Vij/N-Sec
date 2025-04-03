@@ -16,9 +16,11 @@ public class MacVendorLookup {
     public MacVendorLookup(String filePath) {
         loadFromSerializedFile(filePath);
     }
+
     private void loadFromSerializedFile() {
         loadFromSerializedFile(SERIALIZED_FILE);
     }
+
     private void loadFromSerializedFile(String filePath) {
         try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(filePath))) {
             macToVendor = (HashMap<String, String>) in.readObject();
@@ -29,6 +31,7 @@ public class MacVendorLookup {
             macToVendor = new HashMap<>();
         }
     }
+
     public String getVendor(String macAddress) {
         if (!databaseLoaded) {
             return "Database not loaded";
@@ -90,6 +93,7 @@ public class MacVendorLookup {
 
         return "Unknown Vendor";
     }
+
     private String cleanVendorName(String vendor) {
         if (vendor == null) {
             return "Unknown Vendor";
@@ -102,12 +106,15 @@ public class MacVendorLookup {
 
         return vendor.trim();
     }
+
     public boolean isDatabaseLoaded() {
         return databaseLoaded;
     }
+
     public int getDatabaseSize() {
         return macToVendor != null ? macToVendor.size() : 0;
     }
+
     public void displayDatabase(int limit) {
         if (!databaseLoaded || macToVendor.isEmpty()) {
             System.out.println("No database loaded or database is empty.");
@@ -129,25 +136,5 @@ public class MacVendorLookup {
         }
 
         System.out.println("\nTotal entries: " + macToVendor.size());
-    }
-    public static void main(String[] args) {
-        MacVendorLookup lookup = new MacVendorLookup();
-
-        if (lookup.isDatabaseLoaded()) {
-            // Display the first 10 entries
-            lookup.displayDatabase(10);
-
-            // Test with a few MAC addresses
-            String[] testMacs = {
-                    "40:D8:55:1B:20:AA",  // Test with the /36 prefix example
-                    "00:50:56:C0:00:01",  // A common VMware MAC
-                    "44:38:39:FF:EF:57"   // Random MAC
-            };
-
-            System.out.println("\nTesting MAC address lookups:");
-            for (String mac : testMacs) {
-                System.out.println(mac + " => " + lookup.getVendor(mac));
-            }
-        }
     }
 }

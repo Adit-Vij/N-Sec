@@ -1,6 +1,7 @@
 package com.nsec;
 
 import com.formdev.flatlaf.FlatDarkLaf;
+import com.nsec.discovery.NetworkDiscovery;
 import com.nsec.logger.IPLogger;
 import com.nsec.logger.SnifferThread;
 import com.nsec.portscanner.PortScanner;
@@ -96,6 +97,19 @@ public class Main {
                 }
                 ui.getPortScanButton().setText("Start");
                 scanRunning.set(false);
+            }
+        });
+
+        //Network Discovery
+        NetworkDiscovery discovery = new NetworkDiscovery(ui.getDiscovery_tableModel(),() ->
+                SwingUtilities.invokeLater(() -> ui.getDiscoveryButton().setText("Start")));
+        ui.getDiscoveryButton().addActionListener(e ->{
+            if(!discovery.isRunning()){
+                discovery.discoverDevices();
+                ui.getDiscoveryButton().setText("Stop");
+            } else {
+                discovery.stopDiscovery();
+                ui.getDiscoveryButton().setText("Start");
             }
         });
     }

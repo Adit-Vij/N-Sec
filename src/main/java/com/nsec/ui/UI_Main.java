@@ -34,6 +34,7 @@ public class UI_Main {
     private JTable tbl_discovery;
     private DefaultTableModel ip_tableModel;
     private DefaultTableModel port_tableModel;
+    private DefaultTableModel discovery_tableModel;
 
     public UI_Main() {
         JFrame frame = new JFrame("N-Sec: Network Security Suite");
@@ -55,18 +56,19 @@ public class UI_Main {
         return btn_startIpLog;
     }
 
-    public JButton getIPLogStopButton() {
-        return btn_stopIpLog;
-    }
+    public JButton getIPLogStopButton() { return btn_stopIpLog; }
 
     public int getDeviceIndex(JComboBox<String> combo_nif) { return combo_nif.getSelectedIndex();}
 
-    public DefaultTableModel getIp_tableModel() {
-        return ip_tableModel;
-    }
+    public DefaultTableModel getIp_tableModel() { return ip_tableModel; }
+
+    public DefaultTableModel getDiscovery_tableModel(){ return discovery_tableModel; }
 
     public DefaultTableModel getPort_tableModel(){ return port_tableModel;}
+
     public JButton getPortScanButton(){ return btn_portScan; }
+
+    public JButton getDiscoveryButton(){ return btn_startDiscovery; }
 
     private void populateComboBoxWithNif(JComboBox<String> combo) {
         try {
@@ -97,5 +99,7 @@ public class UI_Main {
         tbl_logs = new JTable(ip_tableModel);
         port_tableModel = new DefaultTableModel(port_columns, 0);
         tbl_portScan = new JTable(port_tableModel);
+        discovery_tableModel = new DefaultTableModel(discover_columns, 0);
+        tbl_discovery = new JTable(discovery_tableModel);
     }
 }
