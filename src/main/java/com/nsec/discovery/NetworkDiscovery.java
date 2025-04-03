@@ -1,10 +1,12 @@
 package com.nsec.discovery;
 
+import org.pcap4j.core.*;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.io.IOException;
 import java.net.*;
-import java.util.*;
+import java.util.List;
+import java.util.Scanner;
 import java.util.stream.Collectors;
 
 public class NetworkDiscovery {
@@ -12,14 +14,16 @@ public class NetworkDiscovery {
     private final DefaultTableModel tableModel;
     private volatile boolean running = false;
     private final Runnable onComplete;
+    private PcapNetworkInterface selectedInterface; // Selected network interface
 
-    public NetworkDiscovery(DefaultTableModel discovery_tableModel, Runnable onComplete) {
+    public NetworkDiscovery(DefaultTableModel discoveryTableModel, Runnable onComplete) {
         this.macVendorLookup = new MacVendorLookup();
-        this.tableModel = discovery_tableModel;
+        this.tableModel = discoveryTableModel;
         this.onComplete = onComplete;
+
     }
 
-    public void discoverDevices() {
+    public void discoverDevices(int deviceIndex) {
         if (running) {
             System.out.println("Discovery already in progress...");
             return;
@@ -29,11 +33,29 @@ public class NetworkDiscovery {
 
         new Thread(() -> {
             try {
-                String localSubnet = getLocalSubnet();
+                this.selectedInterface = getSelectedInterface(deviceIndex);
+            } catch (PcapNativeException e) {
+                System.err.println("Error selecting network interface: " + e.getMessage());
+            }
+            try {
+                if (selectedInterface == null) {
+                    System.err.println("No valid network interface selected.");
+                    return;
+                }
+
+                System.out.println("Selected Network Interface: " + selectedInterface.getName() + " - " + selectedInterface.getDescription());
+
+                // Get subnet
+                String localSubnet = getLocalSubnet(selectedInterface);
+                if (localSubnet == null) {
+                    System.err.println("Could not determine subnet.");
+                    return;
+                }
+
                 List<String> ipAddresses = getIPsInSubnet(localSubnet);
 
                 for (String ip : ipAddresses) {
-                    if (!running) break; // Check if the scan was stopped
+                    if (!running) break; // Stop if user cancels
 
                     String macAddress = getMacAddress(ip);
                     if (macAddress != null) {
@@ -49,7 +71,7 @@ public class NetworkDiscovery {
                 running = false;
                 if (onComplete != null) {
                     onComplete.run();
-                }// Reset flag when scan completes or stops
+                }
             }
         }).start();
     }
@@ -63,21 +85,47 @@ public class NetworkDiscovery {
         SwingUtilities.invokeLater(() -> tableModel.addRow(new Object[]{ip, mac, deviceName, vendor}));
     }
 
-    private String getLocalSubnet() throws IOException {
-        Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
-        while (interfaces.hasMoreElements()) {
-            NetworkInterface netInterface = interfaces.nextElement();
-            if (!netInterface.isUp() || netInterface.isLoopback() || netInterface.isVirtual()) continue;
+    private static PcapNetworkInterface getSelectedInterface(int index) throws PcapNativeException {
+        List<PcapNetworkInterface> interfaces = Pcaps.findAllDevs();
+        if (interfaces == null || interfaces.isEmpty()) {
+            throw new PcapNativeException("No network interfaces found.");
+        }
 
-            for (InterfaceAddress addr : netInterface.getInterfaceAddresses()) {
-                InetAddress ip = addr.getAddress();
-                if (ip instanceof Inet4Address) {
-                    int subnetPrefix = addr.getNetworkPrefixLength();
-                    return getSubnetFromIp(ip.getHostAddress(), subnetPrefix);
-                }
+        System.out.println("Available Network Interfaces:");
+        for (int i = 0; i < interfaces.size(); i++) {
+            System.out.println(i + ": " + interfaces.get(i).getName() + " - " + interfaces.get(i).getDescription());
+        }
+
+        if (index < 0 || index >= interfaces.size()) {
+            throw new PcapNativeException("Invalid interface index: " + index);
+        }
+
+        return interfaces.get(index);
+    }
+
+    private String getLocalSubnet(PcapNetworkInterface nif) throws IOException {
+        for (PcapAddress address : nif.getAddresses()) {
+            if (address.getAddress() instanceof Inet4Address) {
+                String ip = address.getAddress().getHostAddress();
+                int subnetPrefix = getSubnetPrefix(nif);
+                return getSubnetFromIp(ip, subnetPrefix);
             }
         }
-        throw new IOException("No valid network interface found.");
+        return null; // No valid IPv4 address
+    }
+
+    private int getSubnetPrefix(PcapNetworkInterface nif) {
+        for (PcapAddress address : nif.getAddresses()) {
+            if (address.getNetmask() instanceof Inet4Address) {
+                String[] octets = address.getNetmask().getHostAddress().split("\\.");
+                int mask = 0;
+                for (String octet : octets) {
+                    mask += Integer.bitCount(Integer.parseInt(octet));
+                }
+                return mask;
+            }
+        }
+        return 24; // Default to /24 if netmask isn't found
     }
 
     private String getSubnetFromIp(String ip, int subnetPrefix) {

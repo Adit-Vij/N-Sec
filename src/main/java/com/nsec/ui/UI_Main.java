@@ -51,6 +51,9 @@ public class UI_Main {
     public JComboBox<String> getNifComboBoxLogger() {
         return combo_nifLogger;
     }
+    public JComboBox<String> getNifComboBoxDiscovery() {
+        return combo_nifDiscovery;
+    }
 
     public JButton getIPLogStartButton() {
         return btn_startIpLog;

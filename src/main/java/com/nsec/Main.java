@@ -6,12 +6,13 @@ import com.nsec.logger.IPLogger;
 import com.nsec.logger.SnifferThread;
 import com.nsec.portscanner.PortScanner;
 import com.nsec.ui.UI_Main;
+import org.pcap4j.core.PcapNativeException;
 
 import javax.swing.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws PcapNativeException {
         // IP Logger
         IPLogger logger = new IPLogger();
         try {
@@ -105,7 +106,7 @@ public class Main {
                 SwingUtilities.invokeLater(() -> ui.getDiscoveryButton().setText("Start")));
         ui.getDiscoveryButton().addActionListener(e ->{
             if(!discovery.isRunning()){
-                discovery.discoverDevices();
+                discovery.discoverDevices(ui.getDeviceIndex(ui.getNifComboBoxDiscovery()));
                 ui.getDiscoveryButton().setText("Stop");
             } else {
                 discovery.stopDiscovery();
