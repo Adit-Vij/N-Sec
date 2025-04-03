@@ -14,13 +14,12 @@ public class NetworkDiscovery {
     private final DefaultTableModel tableModel;
     private volatile boolean running = false;
     private final Runnable onComplete;
-    private PcapNetworkInterface selectedInterface; // Selected network interface
+    private PcapNetworkInterface selectedInterface;
 
     public NetworkDiscovery(DefaultTableModel discoveryTableModel, Runnable onComplete) {
         this.macVendorLookup = new MacVendorLookup();
         this.tableModel = discoveryTableModel;
         this.onComplete = onComplete;
-
     }
 
     public void discoverDevices(int deviceIndex) {
@@ -30,14 +29,11 @@ public class NetworkDiscovery {
         }
 
         running = true;
+        SwingUtilities.invokeLater(() -> tableModel.setRowCount(0));
 
         new Thread(() -> {
             try {
                 this.selectedInterface = getSelectedInterface(deviceIndex);
-            } catch (PcapNativeException e) {
-                System.err.println("Error selecting network interface: " + e.getMessage());
-            }
-            try {
                 if (selectedInterface == null) {
                     System.err.println("No valid network interface selected.");
                     return;
@@ -45,7 +41,6 @@ public class NetworkDiscovery {
 
                 System.out.println("Selected Network Interface: " + selectedInterface.getName() + " - " + selectedInterface.getDescription());
 
-                // Get subnet
                 String localSubnet = getLocalSubnet(selectedInterface);
                 if (localSubnet == null) {
                     System.err.println("Could not determine subnet.");
@@ -53,9 +48,8 @@ public class NetworkDiscovery {
                 }
 
                 List<String> ipAddresses = getIPsInSubnet(localSubnet);
-
                 for (String ip : ipAddresses) {
-                    if (!running) break; // Stop if user cancels
+                    if (!running) break;
 
                     String macAddress = getMacAddress(ip);
                     if (macAddress != null) {
@@ -65,12 +59,13 @@ public class NetworkDiscovery {
                         System.out.println("Discovered: " + ip + " - " + macAddress + " - " + vendor + " - " + deviceName);
                     }
                 }
-            } catch (IOException e) {
+            } catch (IOException | PcapNativeException e) {
                 System.err.println("Error discovering devices: " + e.getMessage());
             } finally {
                 running = false;
                 if (onComplete != null) {
                     onComplete.run();
+                    System.out.println("Discovery Complete!");
                 }
             }
         }).start();
@@ -91,11 +86,6 @@ public class NetworkDiscovery {
             throw new PcapNativeException("No network interfaces found.");
         }
 
-        System.out.println("Available Network Interfaces:");
-        for (int i = 0; i < interfaces.size(); i++) {
-            System.out.println(i + ": " + interfaces.get(i).getName() + " - " + interfaces.get(i).getDescription());
-        }
-
         if (index < 0 || index >= interfaces.size()) {
             throw new PcapNativeException("Invalid interface index: " + index);
         }
@@ -111,7 +101,7 @@ public class NetworkDiscovery {
                 return getSubnetFromIp(ip, subnetPrefix);
             }
         }
-        return null; // No valid IPv4 address
+        return null;
     }
 
     private int getSubnetPrefix(PcapNetworkInterface nif) {
@@ -125,7 +115,7 @@ public class NetworkDiscovery {
                 return mask;
             }
         }
-        return 24; // Default to /24 if netmask isn't found
+        return 24;
     }
 
     private String getSubnetFromIp(String ip, int subnetPrefix) {
@@ -156,7 +146,7 @@ public class NetworkDiscovery {
                 while (scanner.hasNextLine()) {
                     String line = scanner.nextLine();
                     if (line.contains(ip)) {
-                        return extractMac(line);
+                        return formatMac(extractMac(line));
                     }
                 }
             }
@@ -170,16 +160,23 @@ public class NetworkDiscovery {
         String[] tokens = arpLine.split("\\s+");
         for (String token : tokens) {
             if (token.matches("([0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}")) {
-                return token.toUpperCase().replaceAll("[:-]", "");
+                return token.toUpperCase();
             }
         }
         return null;
     }
 
+    private String formatMac(String mac) {
+        if (mac == null) return null;
+        return mac.replaceAll("(.{2})", "$1:").substring(0, 17);
+    }
+
     private String getDeviceName(String ip) {
         String deviceName = getNetBIOSName(ip);
-        if (deviceName == null) deviceName = getReverseDNSName(ip);
-        return (deviceName != null) ? deviceName : "Unknown Device";
+        if (deviceName == null) {
+            deviceName = getReverseDNSName(ip);
+        }
+        return (deviceName != null && !deviceName.equals(ip)) ? deviceName : "Unknown Device";
     }
 
     private String getNetBIOSName(String ip) {
@@ -187,8 +184,8 @@ public class NetworkDiscovery {
             Process p = Runtime.getRuntime().exec("nbtstat -A " + ip);
             try (Scanner scanner = new Scanner(p.getInputStream())) {
                 while (scanner.hasNextLine()) {
-                    String line = scanner.nextLine();
-                    if (line.contains("<00>")) {
+                    String line = scanner.nextLine().trim();
+                    if (line.contains("<00>") && !line.contains("GROUP")) {
                         return line.split("\\s+")[0];
                     }
                 }
@@ -201,10 +198,19 @@ public class NetworkDiscovery {
 
     private String getReverseDNSName(String ip) {
         try {
-            return InetAddress.getByName(ip).getCanonicalHostName();
-        } catch (UnknownHostException e) {
-            return null;
+            Process p = Runtime.getRuntime().exec("nslookup " + ip);
+            try (Scanner scanner = new Scanner(p.getInputStream())) {
+                while (scanner.hasNextLine()) {
+                    String line = scanner.nextLine();
+                    if (line.toLowerCase().contains("name")) {
+                        return line.split(":")[1].trim();
+                    }
+                }
+            }
+        } catch (IOException e) {
+            System.err.println("Reverse DNS lookup failed for " + ip);
         }
+        return null;
     }
 
     public boolean isRunning() {
