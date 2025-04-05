@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.net.*;
 import java.util.List;
 import java.util.Scanner;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 public class NetworkDiscovery {
@@ -32,6 +33,8 @@ public class NetworkDiscovery {
         SwingUtilities.invokeLater(() -> tableModel.setRowCount(0));
 
         new Thread(() -> {
+            ExecutorService executor = Executors.newFixedThreadPool(50);
+
             try {
                 this.selectedInterface = getSelectedInterface(deviceIndex);
                 if (selectedInterface == null) {
@@ -48,20 +51,26 @@ public class NetworkDiscovery {
                 }
 
                 List<String> ipAddresses = getIPsInSubnet(localSubnet);
-                for (String ip : ipAddresses) {
-                    if (!running) break;
+                List<Callable<Void>> tasks = ipAddresses.stream().map(ip -> (Callable<Void>) () -> {
+                    if (!running) return null;
 
-                    String macAddress = getMacAddress(ip);
-                    if (macAddress != null) {
-                        String deviceName = getDeviceName(ip);
-                        String vendor = macVendorLookup.getVendor(macAddress);
-                        addToTable(ip, macAddress, vendor, deviceName);
-                        System.out.println("Discovered: " + ip + " - " + macAddress + " - " + vendor + " - " + deviceName);
+                    if (isReachable(ip)) {
+                        String macAddress = getMacAddress(ip);
+                        if (macAddress != null) {
+                            String deviceName = getDeviceName(ip);
+                            String vendor = macVendorLookup.getVendor(macAddress);
+                            addToTable(ip, macAddress, vendor, deviceName);
+                            System.out.println("Discovered: " + ip + " - " + macAddress + " - " + vendor + " - " + deviceName);
+                        }
                     }
-                }
-            } catch (IOException | PcapNativeException e) {
+                    return null;
+                }).collect(Collectors.toList());
+
+                executor.invokeAll(tasks);
+            } catch (IOException | PcapNativeException | InterruptedException e) {
                 System.err.println("Error discovering devices: " + e.getMessage());
             } finally {
+                executor.shutdown();
                 running = false;
                 if (onComplete != null) {
                     onComplete.run();
@@ -139,6 +148,15 @@ public class NetworkDiscovery {
                 .collect(Collectors.toList());
     }
 
+    private boolean isReachable(String ip) {
+        try {
+            InetAddress inet = InetAddress.getByName(ip);
+            return inet.isReachable(500); // 500ms timeout
+        } catch (IOException ignored) {
+            return false;
+        }
+    }
+
     private String getMacAddress(String ip) {
         try {
             Process p = Runtime.getRuntime().exec("arp -a " + ip);
@@ -146,7 +164,8 @@ public class NetworkDiscovery {
                 while (scanner.hasNextLine()) {
                     String line = scanner.nextLine();
                     if (line.contains(ip)) {
-                        return formatMac(extractMac(line));
+                        String rawMac = extractMac(line);
+                        return formatMac(rawMac);
                     }
                 }
             }
@@ -160,7 +179,7 @@ public class NetworkDiscovery {
         String[] tokens = arpLine.split("\\s+");
         for (String token : tokens) {
             if (token.matches("([0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}")) {
-                return token.toUpperCase();
+                return token.toUpperCase().replace('-', ':');
             }
         }
         return null;
@@ -168,7 +187,15 @@ public class NetworkDiscovery {
 
     private String formatMac(String mac) {
         if (mac == null) return null;
-        return mac.replaceAll("(.{2})", "$1:").substring(0, 17);
+        String[] parts = mac.split(":");
+        if (parts.length != 6) return null;
+
+        for (int i = 0; i < parts.length; i++) {
+            if (parts[i].length() == 1) {
+                parts[i] = "0" + parts[i];
+            }
+        }
+        return String.join(":", parts).toUpperCase();
     }
 
     private String getDeviceName(String ip) {

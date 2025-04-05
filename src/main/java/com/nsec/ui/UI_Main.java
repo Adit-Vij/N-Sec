@@ -43,9 +43,25 @@ public class UI_Main {
         populateComboBoxWithNif(combo_nifLogger);
         populateComboBoxWithNif(combo_nifDiscovery);
         btn_stopIpLog.setEnabled(false);
-        frame.setMinimumSize(new Dimension(500, 400));
+        frame.setMinimumSize(new Dimension(1000, 800));
         frame.pack();
+        SwingUtilities.invokeLater(() -> {
+            for (int i = 0; i < tabbed_modules.getTabCount(); i++) {
+                Icon icon = tabbed_modules.getIconAt(i);
+                String title = tabbed_modules.getTitleAt(i);
+
+                JLabel label = new JLabel(title, icon, JLabel.CENTER);
+                label.setHorizontalTextPosition(SwingConstants.CENTER);   // center the text
+                label.setVerticalTextPosition(SwingConstants.BOTTOM);     // text below the icon
+                label.setHorizontalAlignment(SwingConstants.CENTER);// center label itself
+                label.setFont(label.getFont().deriveFont(16f));
+
+                tabbed_modules.setTabComponentAt(i, label);
+            }
+        });
+        frame.setLocationRelativeTo(null);
         frame.setVisible(true);
+
     }
 
     public JComboBox<String> getNifComboBoxLogger() {

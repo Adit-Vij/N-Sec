@@ -3,18 +3,23 @@
   <grid id="27dc6" binding="superContainer" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="0" left="0" bottom="0" right="0"/>
     <constraints>
-      <xy x="20" y="20" width="500" height="400"/>
+      <xy x="20" y="20" width="1000" height="800"/>
     </constraints>
-    <properties/>
+    <properties>
+      <minimumSize width="1000" height="800"/>
+    </properties>
     <border type="none"/>
     <children>
       <tabbedpane id="50914" binding="tabbed_modules">
         <constraints>
           <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false">
+            <minimum-size width="200" height="40"/>
             <preferred-size width="200" height="200"/>
           </grid>
         </constraints>
         <properties>
+          <font size="20"/>
+          <tabLayoutPolicy value="1"/>
           <tabPlacement value="2"/>
         </properties>
         <border type="none"/>
@@ -22,9 +27,11 @@
           <grid id="8de71" binding="tab_networkDiscovery" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
             <margin top="0" left="0" bottom="0" right="0"/>
             <constraints>
-              <tabbedpane title="Network Discovery"/>
+              <tabbedpane title="Network Discovery" icon="ico_discovery.png"/>
             </constraints>
-            <properties/>
+            <properties>
+              <font size="24"/>
+            </properties>
             <border type="none"/>
             <children>
               <grid id="9c72d" layout-manager="GridLayoutManager" row-count="4" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
@@ -40,15 +47,9 @@
                       <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                     </constraints>
                     <properties>
-                      <font size="16"/>
+                      <font size="24"/>
                       <text value="Network Device"/>
                     </properties>
-                  </component>
-                  <component id="8034d" class="javax.swing.JComboBox" binding="combo_nifDiscovery">
-                    <constraints>
-                      <grid row="1" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
-                    </constraints>
-                    <properties/>
                   </component>
                   <component id="4ed49" class="javax.swing.JButton" binding="btn_startDiscovery">
                     <constraints>
@@ -59,7 +60,7 @@
                       </grid>
                     </constraints>
                     <properties>
-                      <font size="16"/>
+                      <font size="24"/>
                       <text value="Start"/>
                     </properties>
                   </component>
@@ -67,15 +68,29 @@
                     <constraints>
                       <grid row="3" column="0" row-span="1" col-span="2" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
                     </constraints>
-                    <properties/>
+                    <properties>
+                      <font size="20"/>
+                    </properties>
                     <border type="none"/>
                     <children>
                       <component id="31f1b" class="javax.swing.JTable" binding="tbl_discovery" custom-create="true">
                         <constraints/>
-                        <properties/>
+                        <properties>
+                          <font size="20"/>
+                        </properties>
                       </component>
                     </children>
                   </scrollpane>
+                  <component id="8034d" class="javax.swing.JComboBox" binding="combo_nifDiscovery">
+                    <constraints>
+                      <grid row="1" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                        <minimum-size width="200" height="40"/>
+                      </grid>
+                    </constraints>
+                    <properties>
+                      <font size="20"/>
+                    </properties>
+                  </component>
                 </children>
               </grid>
             </children>
@@ -83,7 +98,7 @@
           <grid id="36a9e" binding="tab_ipLogger" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
             <margin top="0" left="0" bottom="0" right="0"/>
             <constraints>
-              <tabbedpane title="IP Logger"/>
+              <tabbedpane title="IP Logger" icon="ico_logs.png"/>
             </constraints>
             <properties/>
             <border type="none"/>
@@ -101,15 +116,10 @@
                       <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                     </constraints>
                     <properties>
-                      <font size="16"/>
+                      <focusable value="true"/>
+                      <font size="24"/>
                       <text value="Network Device"/>
                     </properties>
-                  </component>
-                  <component id="addce" class="javax.swing.JComboBox" binding="combo_nifLogger">
-                    <constraints>
-                      <grid row="1" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
-                    </constraints>
-                    <properties/>
                   </component>
                   <component id="b2c5" class="javax.swing.JButton" binding="btn_startIpLog">
                     <constraints>
@@ -120,7 +130,8 @@
                       </grid>
                     </constraints>
                     <properties>
-                      <font size="16"/>
+                      <focusable value="true"/>
+                      <font size="24"/>
                       <text value="Start"/>
                     </properties>
                   </component>
@@ -133,7 +144,7 @@
                       </grid>
                     </constraints>
                     <properties>
-                      <font size="16"/>
+                      <font size="24"/>
                       <text value="Stop"/>
                     </properties>
                   </component>
@@ -141,15 +152,29 @@
                     <constraints>
                       <grid row="3" column="0" row-span="1" col-span="2" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
                     </constraints>
-                    <properties/>
+                    <properties>
+                      <font size="20"/>
+                    </properties>
                     <border type="none"/>
                     <children>
                       <component id="8dcf0" class="javax.swing.JTable" binding="tbl_logs" custom-create="true">
                         <constraints/>
-                        <properties/>
+                        <properties>
+                          <font size="20"/>
+                        </properties>
                       </component>
                     </children>
                   </scrollpane>
+                  <component id="addce" class="javax.swing.JComboBox" binding="combo_nifLogger">
+                    <constraints>
+                      <grid row="1" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                        <minimum-size width="-1" height="40"/>
+                      </grid>
+                    </constraints>
+                    <properties>
+                      <font size="20"/>
+                    </properties>
+                  </component>
                 </children>
               </grid>
             </children>
@@ -157,9 +182,11 @@
           <grid id="dc809" binding="tab_portScanner" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
             <margin top="0" left="0" bottom="0" right="0"/>
             <constraints>
-              <tabbedpane title="Port Scanner"/>
+              <tabbedpane title="Port Scanner" icon="ico_scanner.png"/>
             </constraints>
-            <properties/>
+            <properties>
+              <font size="20"/>
+            </properties>
             <border type="none"/>
             <children>
               <grid id="c7f6d" binding="portScannerContainer" layout-manager="GridLayoutManager" row-count="4" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
@@ -175,41 +202,51 @@
                       <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                     </constraints>
                     <properties>
-                      <font size="16"/>
+                      <enabled value="true"/>
+                      <font size="24"/>
                       <text value="Start Port"/>
                     </properties>
                   </component>
                   <component id="889e8" class="javax.swing.JSpinner" binding="spin_startPort">
                     <constraints>
-                      <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                      <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                        <minimum-size width="150" height="40"/>
+                      </grid>
                     </constraints>
-                    <properties/>
+                    <properties>
+                      <font size="20"/>
+                    </properties>
                   </component>
                   <component id="76f74" class="javax.swing.JLabel" binding="lbl_endPort">
                     <constraints>
                       <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                     </constraints>
                     <properties>
-                      <font size="16"/>
+                      <font size="24"/>
                       <text value="End Port"/>
                     </properties>
                   </component>
                   <component id="460c5" class="javax.swing.JSpinner" binding="spin_endPort">
                     <constraints>
-                      <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                      <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                        <minimum-size width="150" height="40"/>
+                      </grid>
                     </constraints>
-                    <properties/>
+                    <properties>
+                      <font size="20"/>
+                    </properties>
                   </component>
                   <component id="e48e9" class="javax.swing.JButton" binding="btn_portScan">
                     <constraints>
                       <grid row="2" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false">
-                        <minimum-size width="100" height="40"/>
-                        <preferred-size width="100" height="40"/>
-                        <maximum-size width="100" height="40"/>
+                        <minimum-size width="150" height="40"/>
+                        <preferred-size width="150" height="40"/>
+                        <maximum-size width="150" height="40"/>
                       </grid>
                     </constraints>
                     <properties>
-                      <font size="16"/>
+                      <font size="24"/>
+                      <margin top="5" left="5" bottom="5" right="5"/>
                       <text value="Start Scan"/>
                     </properties>
                   </component>
@@ -217,12 +254,16 @@
                     <constraints>
                       <grid row="3" column="0" row-span="1" col-span="2" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
                     </constraints>
-                    <properties/>
+                    <properties>
+                      <font size="20"/>
+                    </properties>
                     <border type="none"/>
                     <children>
                       <component id="4ca97" class="javax.swing.JTable" binding="tbl_portScan" custom-create="true">
                         <constraints/>
-                        <properties/>
+                        <properties>
+                          <font size="18"/>
+                        </properties>
                       </component>
                     </children>
                   </scrollpane>
