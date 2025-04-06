@@ -103,13 +103,15 @@ public class Main {
 
         //Network Discovery
         NetworkDiscovery discovery = new NetworkDiscovery(ui.getDiscovery_tableModel(),() ->
-                SwingUtilities.invokeLater(() -> ui.getDiscoveryButton().setText("Start")));
+                SwingUtilities.invokeLater(() -> ui.getDiscoveryButton().setText("Start")),ui.getNifComboBoxDiscovery());
         ui.getDiscoveryButton().addActionListener(e ->{
             if(!discovery.isRunning()){
                 discovery.discoverDevices(ui.getDeviceIndex(ui.getNifComboBoxDiscovery()));
+                ui.getNifComboBoxDiscovery().setEnabled(false);
                 ui.getDiscoveryButton().setText("Stop");
             } else {
                 discovery.stopDiscovery();
+                ui.getNifComboBoxDiscovery().setEnabled(true);
                 ui.getDiscoveryButton().setText("Start");
             }
         });

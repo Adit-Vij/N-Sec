@@ -16,11 +16,14 @@ public class NetworkDiscovery {
     private volatile boolean running = false;
     private final Runnable onComplete;
     private PcapNetworkInterface selectedInterface;
+    private final JComboBox<String> combo;
+    private static final int THREAD_COUNT = Runtime.getRuntime().availableProcessors() * 2;
 
-    public NetworkDiscovery(DefaultTableModel discoveryTableModel, Runnable onComplete) {
+    public NetworkDiscovery(DefaultTableModel discoveryTableModel, Runnable onComplete, JComboBox<String> combo) {
         this.macVendorLookup = new MacVendorLookup();
         this.tableModel = discoveryTableModel;
         this.onComplete = onComplete;
+        this.combo = combo;
     }
 
     public void discoverDevices(int deviceIndex) {
@@ -33,7 +36,7 @@ public class NetworkDiscovery {
         SwingUtilities.invokeLater(() -> tableModel.setRowCount(0));
 
         new Thread(() -> {
-            ExecutorService executor = Executors.newFixedThreadPool(50);
+            ExecutorService executor = Executors.newFixedThreadPool(THREAD_COUNT);
 
             try {
                 this.selectedInterface = getSelectedInterface(deviceIndex);
@@ -73,7 +76,7 @@ public class NetworkDiscovery {
                 executor.shutdown();
                 running = false;
                 if (onComplete != null) {
-                    onComplete.run();
+                    onComplete.run(); combo.setEnabled(true);
                     System.out.println("Discovery Complete!");
                 }
             }
