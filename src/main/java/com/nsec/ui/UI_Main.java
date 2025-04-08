@@ -32,6 +32,16 @@ public class UI_Main {
     private JLabel lbl_nif2;
     private JButton btn_startDiscovery;
     private JTable tbl_discovery;
+    private JPanel tab_encryptedChat;
+    private JTextField txt_peerIP;
+    private JPanel encryptedChatContainer;
+    private JButton btn_connect;
+    private JLabel lbl_enterIp;
+    private JTextPane txtAr_chat;
+    private JLabel lbl_connDisconn;
+    private JLabel lbl_status;
+    private JTextField txt_message;
+    private JButton btn_send;
     private DefaultTableModel ip_tableModel;
     private DefaultTableModel port_tableModel;
     private DefaultTableModel discovery_tableModel;
@@ -43,7 +53,7 @@ public class UI_Main {
         populateComboBoxWithNif(combo_nifLogger);
         populateComboBoxWithNif(combo_nifDiscovery);
         btn_stopIpLog.setEnabled(false);
-        frame.setMinimumSize(new Dimension(1000, 800));
+        frame.setMinimumSize(new Dimension(1050, 800));
         frame.pack();
         SwingUtilities.invokeLater(() -> {
             for (int i = 0; i < tabbed_modules.getTabCount(); i++) {
